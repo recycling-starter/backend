@@ -1,0 +1,42 @@
+version: '3.3'
+
+services:
+  web:
+    container_name: web
+    build:
+      context: ..
+      dockerfile: ./env/Dockerfile
+    restart: on-failure
+    expose:
+      - 8000
+    env_file:
+      - prod.env
+    depends_on:
+      - db
+    volumes:
+      - ../:/srv/html/restarter
+    command: sh -c "gunicorn -c env/gunicorn.py restarter.asgi:application"
+
+  db:
+    image: postgres:latest
+    restart: on-failure
+    env_file:
+      - prod.env
+    expose:
+      - 5432
+    volumes:
+      - /usr/local/var/postgres:/var/lib/postgres/data/pgdata
+
+  nginx:
+    image: nginx:latest
+    restart: always
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf
+      - ../media:/media
+      - ../static:/static
+      - /etc/letsencrypt/:/etc/letsencrypt
+    depends_on:
+      - web
+    ports:
+      - 80:80
+      - 443:443
