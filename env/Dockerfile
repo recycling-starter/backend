@@ -4,6 +4,6 @@ ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update -y && apt-get upgrade -y
 
-COPY . /srv/html/bugbounty
-WORKDIR /srv/html/bugbounty
-RUN pip install -r /srv/html/bugbounty/env/requirements.txt
+COPY . /srv/html/restarter
+WORKDIR /srv/html/restarter
+RUN pip install -r /srv/html/restarter/env/requirements.txt
