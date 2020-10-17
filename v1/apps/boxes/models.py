@@ -22,3 +22,7 @@ class Box(models.Model):
         User,
         verbose_name='Ответственные пользователи'
     )
+
+    def __str__(self):
+        return self.room
+
