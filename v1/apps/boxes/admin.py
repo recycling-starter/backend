@@ -5,10 +5,11 @@ from v1.apps.boxes.models import Box
 
 
 class BoxAdmin(admin.ModelAdmin):
-    list_display = ('id', 'room', 'fullness', 'building_address', 'organization_name')
-    list_display_links = ('id',)
+    list_display = ('room', 'fullness', 'building_address', 'organization_name')
+    list_display_links = ('room',)
     list_filter = ('building__organization__name',)
     ordering = ('-fullness',)
+    search_fields = ('room',)
 
     def building_address(self, obj):
         return obj.building.address
