@@ -27,6 +27,9 @@ class Organization(models.Model):
         max_length=250
     )
 
+    def __str__(self):
+        return self.name
+
 
 class Building(models.Model):
     address = models.CharField(
@@ -39,3 +42,6 @@ class Building(models.Model):
         null=True,
         on_delete=models.SET_NULL
     )
+
+    def __str__(self):
+        return self.address
