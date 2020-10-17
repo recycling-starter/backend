@@ -16,6 +16,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 class BuildingAdmin(admin.ModelAdmin):
     list_display = ('address', 'organization_name')
     list_display_links = ('address',)
+    search_fields = ('address',)
     list_filter = ('organization__name',)
     ordering = ('address',)
 
