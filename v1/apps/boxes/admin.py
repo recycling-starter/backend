@@ -11,4 +11,4 @@ class BoxAdmin(admin.ModelAdmin):
     ordering = ('-fullness',)
 
 
-admin.site.register(Box)
+admin.site.register(Box, BoxAdmin)
