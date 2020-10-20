@@ -173,7 +173,7 @@ class BoxView(viewsets.ViewSet):
             raise Http404
         if 'user' not in request.query_params:
             raise ValidationError(_('"user" must be here'))
-        user = request.data['user']
+        user = request.query_params['user']
         try:
             user = User.objects.get(pk=user)
             if user.building != box.building:
