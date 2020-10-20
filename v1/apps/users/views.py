@@ -6,6 +6,7 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_text, force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import viewsets, status
+from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -14,7 +15,6 @@ from restarter.settings import DOMAIN, EMAIL_HOST_USER
 from v1.apps.organizations.models import Building
 from v1.apps.users.models import User, account_activation_token
 from v1.apps.users.serializers import UserListCreateSerializer, CustomAuthTokenSerializer, UserDataSerializer
-from rest_framework.authtoken.models import Token
 
 
 def activate(request, uidb64, token):
@@ -66,7 +66,6 @@ class UserView(viewsets.ViewSet):
         for i in result:
             del i['password']
         return Response(result)
-
 
     def create(self, request):
         serializer = UserListCreateSerializer(data=request.data)
