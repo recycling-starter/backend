@@ -1,6 +1,7 @@
 from django.core.mail import EmailMessage
 from django.db import IntegrityError
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.encoding import force_text, force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -10,8 +11,9 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from restarter.settings import DOMAIN, EMAIL_HOST_USER
+from v1.apps.organizations.models import Building
 from v1.apps.users.models import User, account_activation_token
-from v1.apps.users.serializers import UserListCreateSerializer, CustomAuthTokenSerializer
+from v1.apps.users.serializers import UserListCreateSerializer, CustomAuthTokenSerializer, UserDataSerializer
 from rest_framework.authtoken.models import Token
 
 
@@ -45,10 +47,26 @@ class CustomObtainAuthToken(ObtainAuthToken):
 
 
 class UserView(viewsets.ViewSet):
-    def retrieve(self, request):
-        result = UserListCreateSerializer(request.user).data
-        del result['password']
+    def retrieve(self, request, pk):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        result = UserDataSerializer(user).data
         return Response(result)
+
+    def list(self, request):
+        if 'building' in request.query_params:
+            try:
+                building = Building.objects.get(id=request.query_params['building'])
+            except Building.DoesNotExist:
+                raise Http404
+            queryset = User.objects.filter(building=building)
+        else:
+            queryset = User.objects.all()
+        result = UserListCreateSerializer(queryset, many=True).data
+        for i in result:
+            del i['password']
+        return Response(result)
+
 
     def create(self, request):
         serializer = UserListCreateSerializer(data=request.data)

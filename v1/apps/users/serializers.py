@@ -11,6 +11,21 @@ class UserListCreateSerializer(serializers.ModelSerializer):
         fields = ['first_name', 'building', 'password', 'email', 'phone', 'room', 'organization']
 
 
+class UserDataSerializer(serializers.ModelSerializer):
+    boxes = serializers.SerializerMethodField('get_boxes')
+
+    def get_boxes(self, obj):
+        return [{
+            'fullness': i.fullness,
+            'room': i.room
+        } for i in list(obj.box_set.all())]
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'building', 'email', 'phone', 'room', 'organization', 'boxes']
+        read_only_fields = ['boxes']
+
+
 class CustomAuthTokenSerializer(serializers.Serializer):
     email = serializers.CharField(label=_("Email"))
     password = serializers.CharField(

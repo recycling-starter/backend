@@ -12,7 +12,7 @@ class OrganizationListSerializer(serializers.ModelSerializer):
 class BuildingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Building
-        fields = ['id', 'address']
+        fields = ['id', 'address', 'organization']
 
 
 class OrganizationSerializer(serializers.ModelSerializer):

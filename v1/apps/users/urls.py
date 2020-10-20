@@ -1,8 +1,4 @@
-from django.contrib.auth import authenticate
 from django.urls import path, re_path
-from django.utils.translation import gettext_lazy as _
-from rest_framework import serializers
-from rest_framework.authtoken.views import ObtainAuthToken
 
 from v1.apps.users.views import activate, UserView, CustomObtainAuthToken
 
@@ -12,7 +8,10 @@ urlpatterns = [
             name='activate'),
     path('', UserView.as_view({
         'post': 'create',
-        'get': 'retrieve',
+        'get': 'list',
         'put': 'partial_update'
+    })),
+    path('<int:pk>', UserView.as_view({
+        'get': 'retrieve',
     })),
 ]
