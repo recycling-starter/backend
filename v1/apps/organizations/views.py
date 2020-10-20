@@ -12,7 +12,7 @@ class BuildingView(viewsets.ViewSet):
         if 'organization' in request.query_params:
             try:
                 organization = Organization.objects.get(id=request.query_params['organization'])
-            except Building.DoesNotExist:
+            except Organization.DoesNotExist:
                 raise Http404
             queryset = Building.objects.filter(organization=organization)
         else:
