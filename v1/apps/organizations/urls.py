@@ -20,4 +20,7 @@ urlpatterns = [
         permission_classes=[IsOrganizationAdmin]
     ),
          name='organization-RW'),
+    path('buildings', BuildingView.as_view({
+        'get': 'list'
+    }))
 ]
