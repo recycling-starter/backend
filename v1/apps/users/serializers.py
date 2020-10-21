@@ -8,7 +8,8 @@ from v1.apps.users.models import User
 class UserListCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'building', 'password', 'email', 'phone', 'room', 'organization']
+        fields = ['id', 'first_name', 'building', 'password', 'email', 'phone', 'room', 'organization']
+        read_only_fields = ['id']
 
 
 class UserDataSerializer(serializers.ModelSerializer):
@@ -16,14 +17,15 @@ class UserDataSerializer(serializers.ModelSerializer):
 
     def get_boxes(self, obj):
         return [{
+            'id': i.id,
             'fullness': i.fullness,
             'room': i.room
         } for i in list(obj.box_set.all())]
 
     class Meta:
         model = User
-        fields = ['first_name', 'building', 'email', 'phone', 'room', 'organization', 'boxes']
-        read_only_fields = ['boxes']
+        fields = ['id', 'first_name', 'building', 'email', 'phone', 'room', 'organization', 'boxes']
+        read_only_fields = ['id', 'boxes']
 
 
 class CustomAuthTokenSerializer(serializers.Serializer):
