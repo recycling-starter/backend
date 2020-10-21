@@ -20,5 +20,6 @@ class OrganizationSerializer(serializers.ModelSerializer):
         model = Organization
         fields = ['min_full_boxes',
                   'min_fullness_level_dropoff_call',
+                  'min_fullness_level_dropoff',
                   'dropoff_email_to',
                   'dropoff_email_from']
