@@ -19,7 +19,7 @@ from v1.apps.users.models import User
 
 class BoxView(viewsets.ViewSet):
     def get_object(self, request, pk):
-        queryset = Box.objects.filter(building__organization=request.user.organization)
+        queryset = Box.objects.all()
         box = get_object_or_404(queryset, pk=pk)
         return box
 
