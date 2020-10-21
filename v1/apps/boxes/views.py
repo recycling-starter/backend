@@ -70,6 +70,44 @@ class BoxView(viewsets.ViewSet):
         box.room = serializer.validated_data['room']
 
         box.save()
+
+        building = box.building
+        organization = building.organization
+        full_boxes = list(Box.objects.filter(
+            fullness__gte=organization.min_fullness_level_dropoff_call,
+            building=building
+        ))
+        nearly_full_boxes = list(Box.objects.filter(
+            fullness__gte=organization.min_fullness_level_dropoff,
+            building=building
+        ))
+        if box.fullness >= organization.min_fullness_level_dropoff_call \
+                and len(full_boxes) >= organization.min_full_boxes:
+            try:
+                dropoff_call = DropoffCall.objects.get(
+                    building=box.building
+                )
+            except DropoffCall.DoesNotExist:
+                send_mail(
+                    subject='Нужен вывоз мусора',
+                    message='Привет пока',
+                    recipient_list=[box.building.organization.dropoff_email_to],
+                    from_email=settings.EMAIL_HOST_USER,
+                    fail_silently=False
+                )
+                dropoff_call = DropoffCall(
+                    building=box.building
+                )
+                dropoff_call.save()
+                dropofflog = []
+                for i in nearly_full_boxes:
+                    dropofflog.append(DropoffLog(
+                        call=dropoff_call,
+                        box=i,
+                        box_percent_dropped=i.fullness
+                    ))
+                DropoffLog.objects.bulk_create(dropofflog)
+
         return Response(BoxSerializer(box).data)
 
     def partial_update(self, request, pk):
