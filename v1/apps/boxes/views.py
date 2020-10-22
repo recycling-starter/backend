@@ -102,7 +102,7 @@ class BoxView(viewsets.ViewSet):
                         box_percent_dropped=i.fullness
                     ))
                 DropoffLog.objects.bulk_create(dropofflog)
-                message = render_to_string('reset_password.html', {
+                message = render_to_string('dropoff_call.html', {
                     'dropofflog': dropofflog,
                     'building': building
                 })
@@ -167,7 +167,7 @@ class BoxView(viewsets.ViewSet):
                         box_percent_dropped=i.fullness
                     ))
                 DropoffLog.objects.bulk_create(dropofflog)
-                message = render_to_string('reset_password.html', {
+                message = render_to_string('dropoff_call.html', {
                     'dropofflog': dropofflog,
                     'building': building
                 })
