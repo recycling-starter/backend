@@ -18,9 +18,9 @@ class DropoffListSerializer(serializers.ModelSerializer):
 
 
 class DropoffLogSerializer(serializers.ModelSerializer):
-    box = serializers.SerializerMethodField('get_box')
+    data = serializers.SerializerMethodField('get_data')
 
-    def get_box(self, obj):
+    def get_data(self, obj):
         return {
             'id': obj.box.id,
             'room': obj.box.room,
