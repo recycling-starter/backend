@@ -50,20 +50,20 @@ class CustomObtainAuthToken(ObtainAuthToken):
 
 class UserView(viewsets.ViewSet):
     def retrieve(self, request, pk):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        result = UserDataSerializer(user).data
+        return Response(result)
+
+    def list(self, request):
+
         if 'organization' in request.query_params:
             try:
                 organization = Organization.objects.get(id=request.query_params['organization'])
             except Organization.DoesNotExist:
                 raise Http404
             queryset = User.objects.filter(building__organization=organization)
-        else:
-            queryset = User.objects.all()
-        user = get_object_or_404(queryset, pk=pk)
-        result = UserDataSerializer(user).data
-        return Response(result)
-
-    def list(self, request):
-        if 'building' in request.query_params:
+        elif 'building' in request.query_params:
             try:
                 building = Building.objects.get(id=request.query_params['building'])
             except Building.DoesNotExist:
@@ -71,6 +71,7 @@ class UserView(viewsets.ViewSet):
             queryset = User.objects.filter(building=building)
         else:
             queryset = User.objects.all()
+
         result = UserListCreateSerializer(queryset, many=True).data
         for i in result:
             del i['password']
