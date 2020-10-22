@@ -21,14 +21,15 @@ class DropoffLogSerializer(serializers.ModelSerializer):
     box = serializers.SerializerMethodField('get_box')
 
     def get_box(self, obj):
-        return [{
+        return {
             'id': obj.box.id,
             'room': obj.box.room,
-        }]
+            'box_percent_dropped': obj.box_percent_dropped
+        }
 
     class Meta:
         model = DropoffLog
-        fields = ['box_percent_dropped', 'box']
+        fields = ['data']
 
 
 class DropoffDataSerializer(serializers.ModelSerializer):
