@@ -1,5 +1,5 @@
 # Create your views here.
-from django.core.mail import send_mail, EmailMessage
+from django.core.mail import EmailMessage
 from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -125,14 +125,14 @@ class BoxView(viewsets.ViewSet):
             try:
                 fullness = int(fullness)
             except ValueError:
-                raise ValidationError(detail=_('"fullness" must be int.'))
+                raise ValidationError(detail='"fullness" must be int.')
         else:
-            raise ValidationError(detail=_('Must include "fullness".'))
+            raise ValidationError(detail='Must include "fullness".')
 
         if fullness < box.fullness:
             raise PermissionDenied
         if fullness > 100:
-            raise ValidationError(detail=_('"fullness" must be less than 100.'))
+            raise ValidationError(detail='"fullness" must be less than 100.')
 
         box.fullness = fullness
         box.save()
@@ -211,7 +211,8 @@ class BoxView(viewsets.ViewSet):
     @action(detail=True, methods=['post'])
     def get_users_available(self, request, pk=None):
         box = self.get_object(request, pk)
-        users = User.objects.annotate(count=Count('box')).filter(building=box.building).exclude(box=box).order_by('count')
+        users = User.objects.annotate(count=Count('box')).filter(building=box.building).exclude(box=box).order_by(
+            'count')
         return Response(AvailableUsersSerializer(users, many=True).data)
 
     @add_user.mapping.delete
@@ -236,4 +237,3 @@ class BoxView(viewsets.ViewSet):
         else:
             box.users.remove(user)
         return Response(status=status.HTTP_204_NO_CONTENT)
-

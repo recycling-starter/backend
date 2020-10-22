@@ -37,5 +37,5 @@ class DropoffView(viewsets.ViewSet):
         queryset.save()
         for dropofflog in list(DropoffLog.objects.filter(call=queryset)):
             dropofflog.box.fullness = 0
-            dropofflog.save()
+            dropofflog.box.save()
         return Response(status=status.HTTP_201_CREATED)
