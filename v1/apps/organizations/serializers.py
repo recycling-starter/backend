@@ -55,8 +55,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
             field = getattr(instance, attr)
             field.set(value)
 
-        for box in list(Box.objects.filter(building__organization=instance)):
-            building = box.building
+        for building in list(Building.objects.filter(organization=instance)):
             full_boxes = list(Box.objects.filter(
                 fullness__gte=instance.min_fullness_level_dropoff_call,
                 building=building
@@ -65,22 +64,21 @@ class OrganizationSerializer(serializers.ModelSerializer):
                 fullness__gte=instance.min_fullness_level_dropoff,
                 building=building
             ))
-            if box.fullness >= instance.min_fullness_level_dropoff_call \
-                    and len(full_boxes) >= instance.min_full_boxes:
+            if len(full_boxes) >= instance.min_full_boxes:
                 try:
                     _ = DropoffCall.objects.get(
-                        building=box.building
+                        building=building
                     )
                 except DropoffCall.DoesNotExist:
                     send_mail(
                         subject='Нужен вывоз мусора',
                         message='Привет пока',
-                        recipient_list=[box.building.organization.dropoff_email_to],
+                        recipient_list=[instance.dropoff_email_to],
                         from_email=settings.EMAIL_HOST_USER,
                         fail_silently=False
                     )
                     dropoff_call = DropoffCall(
-                        building=box.building
+                        building=building
                     )
                     dropoff_call.save()
                     dropofflog = []
