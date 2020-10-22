@@ -28,7 +28,7 @@ class DropoffLogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DropoffLog
-        fields = ['box', 'box_percent_dropped']
+        fields = ['box__id', 'box__room', 'box_percent_dropped', 'box']
 
 
 class DropoffDataSerializer(serializers.ModelSerializer):
