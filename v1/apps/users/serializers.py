@@ -8,8 +8,8 @@ from v1.apps.users.models import User
 class UserListCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'building', 'password', 'email', 'phone', 'room', 'organization']
-        read_only_fields = ['id']
+        fields = ['id', 'is_active', 'first_name', 'building', 'password', 'email', 'phone', 'room', 'organization']
+        read_only_fields = ['id', 'is_active']
 
 
 class UserDataSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class UserDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'building', 'email', 'phone', 'room', 'organization', 'boxes']
+        fields = ['id', 'first_name', 'building', 'email', 'phone', 'room', 'organization', 'boxes', 'is_active']
         read_only_fields = ['id', 'boxes']
 
 
