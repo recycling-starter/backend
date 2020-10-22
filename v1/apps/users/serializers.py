@@ -28,6 +28,14 @@ class UserDataSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'boxes']
 
 
+class PasswordSerializer(serializers.Serializer):
+    """
+    Serializer for password change endpoint.
+    """
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+
 class CustomAuthTokenSerializer(serializers.Serializer):
     email = serializers.CharField(label=_("Email"))
     password = serializers.CharField(

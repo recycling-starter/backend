@@ -9,7 +9,8 @@ urlpatterns = [
     path('', UserView.as_view({
         'post': 'create',
         'get': 'list',
-        'put': 'partial_update'
+        'put': 'partial_update',
+        'patch': 'update'
     })),
     path('<int:pk>', UserView.as_view({
         'get': 'retrieve',

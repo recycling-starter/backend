@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate
 from django.core.mail import EmailMessage
 from django.db import IntegrityError
 from django.http import HttpResponse, Http404
@@ -14,7 +15,8 @@ from rest_framework.response import Response
 from restarter.settings import DOMAIN, EMAIL_HOST_USER
 from v1.apps.organizations.models import Building, Organization
 from v1.apps.users.models import User, account_activation_token
-from v1.apps.users.serializers import UserListCreateSerializer, CustomAuthTokenSerializer, UserDataSerializer
+from v1.apps.users.serializers import UserListCreateSerializer, CustomAuthTokenSerializer, UserDataSerializer, \
+    PasswordSerializer
 
 
 def activate(request, uidb64, token):
@@ -103,8 +105,20 @@ class UserView(viewsets.ViewSet):
 
         return Response(status=status.HTTP_201_CREATED)
 
-    def update(self, request, pk):
-        pass
+    def update(self, request):
+        serializer = PasswordSerializer(data=request.data)
+
+        if serializer.is_valid():
+            if not request.user.check_password(serializer.data.get('old_password')):
+                return Response({'old_password': ['Wrong password.']},
+                                status=status.HTTP_400_BAD_REQUEST)
+            # set_password also hashes the password that the user will get
+            request.user.set_password(serializer.data.get('new_password'))
+            request.user.save()
+            return Response({'status': 'password set'}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request):
         email = request.user.email
