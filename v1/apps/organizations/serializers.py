@@ -1,4 +1,5 @@
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
+from django.template.loader import render_to_string
 from rest_framework import serializers
 from rest_framework.serializers import raise_errors_on_nested_writes
 from rest_framework.utils import model_meta
@@ -70,13 +71,6 @@ class OrganizationSerializer(serializers.ModelSerializer):
                         building=building
                     )
                 except DropoffCall.DoesNotExist:
-                    send_mail(
-                        subject='Нужен вывоз мусора',
-                        message='Привет пока',
-                        recipient_list=[instance.dropoff_email_to],
-                        from_email=settings.EMAIL_HOST_USER,
-                        fail_silently=False
-                    )
                     dropoff_call = DropoffCall(
                         building=building
                     )
@@ -89,5 +83,16 @@ class OrganizationSerializer(serializers.ModelSerializer):
                             box_percent_dropped=i.fullness
                         ))
                     DropoffLog.objects.bulk_create(dropofflog)
+                    message = render_to_string('reset_password.html', {
+                        'dropofflog': dropofflog,
+                        'building': building
+                    })
+                    email = EmailMessage(
+                        'Вывоз макулатуры RCS',
+                        message,
+                        to=[instance.dropoff_email_to],
+                        from_email=settings.EMAIL_HOST_USER
+                    )
+                    email.send()
 
         return instance

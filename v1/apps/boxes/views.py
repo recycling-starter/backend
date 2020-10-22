@@ -85,17 +85,10 @@ class BoxView(viewsets.ViewSet):
         if box.fullness >= organization.min_fullness_level_dropoff_call \
                 and len(full_boxes) >= organization.min_full_boxes:
             try:
-                dropoff_call = DropoffCall.objects.get(
+                _ = DropoffCall.objects.get(
                     building=box.building
                 )
             except DropoffCall.DoesNotExist:
-                send_mail(
-                    subject='Нужен вывоз мусора',
-                    message='Привет пока',
-                    recipient_list=[box.building.organization.dropoff_email_to],
-                    from_email=settings.EMAIL_HOST_USER,
-                    fail_silently=False
-                )
                 dropoff_call = DropoffCall(
                     building=box.building
                 )
@@ -108,6 +101,17 @@ class BoxView(viewsets.ViewSet):
                         box_percent_dropped=i.fullness
                     ))
                 DropoffLog.objects.bulk_create(dropofflog)
+                message = render_to_string('reset_password.html', {
+                    'dropofflog': dropofflog,
+                    'building': building
+                })
+                email = EmailMessage(
+                    'Вывоз макулатуры RCS',
+                    message,
+                    to=[box.building.organization.dropoff_email_to],
+                    from_email=settings.EMAIL_HOST_USER
+                )
+                email.send()
 
         return Response(BoxSerializer(box).data)
 
@@ -145,7 +149,7 @@ class BoxView(viewsets.ViewSet):
         if box.fullness >= organization.min_fullness_level_dropoff_call \
                 and len(full_boxes) >= organization.min_full_boxes:
             try:
-                dropoff_call = DropoffCall.objects.get(
+                _ = DropoffCall.objects.get(
                     building=box.building
                 )
             except DropoffCall.DoesNotExist:
