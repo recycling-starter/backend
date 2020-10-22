@@ -1,0 +1,84 @@
+{% autoescape off %}
+
+
+
+    <div>Добрый день.</div>
+    <div>Просим организовать вывоз макулатуры из корпуса компании "{{ building.organization.name }}" по адресу:</div>
+    <div>{{ building.address }}</div>
+
+    <div>Макулатуру требуется забрать из кабинетов:</div>
+    <table style="border-collapse:collapse;width:459px" width="459">
+        <colgroup>
+            <col style="width:65pt" width="87">
+            <col style="width:77pt" width="103">
+            <col style="width:94pt" width="125">
+            <col style="width:108pt" width="144">
+        </colgroup>
+        <tbody>
+        <tr>
+            <td style="border-bottom:.7px solid black;height:20px;width:87px;text-align:center;padding-top:1px;padding-right:1px;padding-left:1px;vertical-align:bottom;white-space:nowrap;background-color:#70ad47;border-top:.7px solid black;border-right:.7px solid black;border-left:.7px solid black">
+                <span style="font-size:15px">
+                    <span style="color:white">
+                        <span style="font-weight:700">
+                            <span style="text-decoration:none">
+                                <span>
+                                    <span>
+                                        <span style="font-family:Calibri,sans-serif">
+                                            <span style="font-style:normal">
+                                                Кабинет
+                                            </span>
+                                        </span>
+                                    </span>
+                                </span>
+                            </span>
+                        </span>
+                    </span>
+                </span>
+            </td>
+            <td style="border-bottom:.7px solid black;width:103px;text-align:center;padding-top:1px;padding-right:1px;padding-left:1px;vertical-align:bottom;white-space:nowrap;background-color:#70ad47;border-top:.7px solid black;border-right:.7px solid black;border-left:none">
+                <span style="font-size:15px"><span style="color:white"><span style="font-weight:700"><span
+                        style="text-decoration:none"><span><span><span style="font-family:Calibri,sans-serif"><span
+                        style="font-style:normal">Ответственные лица*</span></span></span></span></span></span></span></span></td>
+        </tr>
+        {% for box in dropofflog %}
+            <tr>
+                <td style="border-bottom:.7px solid black;height:20px;text-align:center;padding-top:1px;padding-right:1px;padding-left:1px;vertical-align:bottom;white-space:nowrap;background-color:#e2efda;border-top:none;border-right:.7px solid black;border-left:.7px solid black">
+                <span style="font-size:15px"><span style="color:black"><span style="font-weight:400"><span
+                        style="text-decoration:none"><span><span><span style="font-family:Calibri,sans-serif"><span
+                        style="font-style:normal">{{ box.room }}</span></span></span></span></span></span></span></span>
+                </td>
+                <td style="border-bottom:.7px solid black;text-align:center;padding-top:1px;padding-right:1px;padding-left:1px;vertical-align:bottom;white-space:nowrap;background-color:#e2efda;border-top:none;border-right:.7px solid black;border-left:none">
+                <span style="font-size:15px"><span style="color:black"><span style="font-weight:400"><span
+                        style="text-decoration:none"><span><span><span style="font-family:Calibri,sans-serif"><span
+                        style="font-style:normal">
+                    {% for user in box.users.all %}
+                        {{ user.name }}: {{ user.phone }}<br>
+                    {% endfor %}
+                </span></span></span></span></span></span></span></span></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div>* - просим ваш персонал по приходе в кабинет спрашивать ответственного или другого сотрудника в аудитории,
+        который точно укажет на сырьё для вывоза.&nbsp;
+    </div>
+    <div>&nbsp;</div>
+    <div>В ответном письме просим указать дату и временной промежуток&nbsp;вывоза, индивидуальный регистрационный
+        знак
+        автомобиля, ФИО персонала с вашей стороны.&nbsp;
+    </div>
+    <div>По организационным вопросам обращаться по телефону <strong>+79215577899</strong> (Илья)</div>
+    <div>&nbsp;</div>
+    <hr>
+    <div>&nbsp;</div>
+    <hr>
+    <div>&nbsp;</div>
+    <div>Данное письмо было составлено автоматически. Просьба для ответа использовать почту нашего
+        администратора: {{ building.organization.dropoff_email_from }}</div>
+
+    <div>С уважением,</div>
+    <div>Команда проекта ReCyclingStarter.</div>
+
+{% endautoescape %}
+
+

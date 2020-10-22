@@ -55,19 +55,18 @@ class OrganizationSerializer(serializers.ModelSerializer):
             field = getattr(instance, attr)
             field.set(value)
 
-        for box in list(Box.objects.filter(organzation=instance)):
+        for box in list(Box.objects.filter(building__organzation=instance)):
             building = box.building
-            organization = building.organization
             full_boxes = list(Box.objects.filter(
-                fullness__gte=organization.min_fullness_level_dropoff_call,
+                fullness__gte=instance.min_fullness_level_dropoff_call,
                 building=building
             ))
             nearly_full_boxes = list(Box.objects.filter(
-                fullness__gte=organization.min_fullness_level_dropoff,
+                fullness__gte=instance.min_fullness_level_dropoff,
                 building=building
             ))
-            if box.fullness >= organization.min_fullness_level_dropoff_call \
-                    and len(full_boxes) >= organization.min_full_boxes:
+            if box.fullness >= instance.min_fullness_level_dropoff_call \
+                    and len(full_boxes) >= instance.min_full_boxes:
                 try:
                     _ = DropoffCall.objects.get(
                         building=box.building

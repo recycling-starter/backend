@@ -1,7 +1,6 @@
-from django.contrib.auth import authenticate
 from django.core.mail import EmailMessage
 from django.db import IntegrityError
-from django.http import HttpResponse, Http404
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.encoding import force_text, force_bytes
@@ -9,28 +8,16 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import viewsets, status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from restarter.settings import DOMAIN, EMAIL_HOST_USER
+from restarter.settings import EMAIL_HOST_USER, BASEDOMAIN
 from v1.apps.organizations.models import Building, Organization
 from v1.apps.users.models import User, account_activation_token
 from v1.apps.users.serializers import UserListCreateSerializer, CustomAuthTokenSerializer, UserDataSerializer, \
     PasswordSerializer
 
-
-def activate(request, uidb64, token):
-    try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-    if user is not None and account_activation_token.check_token(user, token):
-        user.is_active = True
-        user.save()
-        return HttpResponse('Thank you for your email confirmation. Now you can login your account.')
-    else:
-        return HttpResponse('Activation link is invalid!')
 
 
 class CustomObtainAuthToken(ObtainAuthToken):
@@ -92,12 +79,12 @@ class UserView(viewsets.ViewSet):
 
         user.set_password(validated_data['password'])
         user.save()
-        mail_subject = 'Activate your ReStarter account.'
+        mail_subject = 'Активируйте свой аккаунт ReStarter.'
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = account_activation_token.make_token(user)
         message = render_to_string('acc_active_email.html', {
             'user': user,
-            'domain': DOMAIN,
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-            'token': account_activation_token.make_token(user),
+            'url': f'https://{BASEDOMAIN}/activate/{str(uid)}/{str(token)}',
         })
         email = EmailMessage(
             mail_subject, message, to=[validated_data['email']], from_email=EMAIL_HOST_USER
@@ -150,3 +137,43 @@ class UserView(viewsets.ViewSet):
 
     def destroy(self, request, pk):
         pass
+
+    @action(detail=True, methods=['post'])
+    def check_email(self, request, uidb64, token):
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        if user is not None and account_activation_token.check_token(user, token):
+            if 'password' in request.data:
+                password = request.data['password']
+                request.user.set_password(password)
+            user.is_active = True
+            user.save()
+            return Response(status=status.HTTP_201_CREATED)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'])
+    def reset_password(self, request):
+        if 'email' not in request.data:
+            raise ValidationError('email not provided')
+
+        try:
+            user = User.objects.get(email=request.data['email'])
+
+            mail_subject = 'Сброс пароля ReStarter.'
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = account_activation_token.make_token(user)
+            message = render_to_string('reset_password.html', {
+                'user': user,
+                'url': f'https://{BASEDOMAIN}/reset_password/{str(uid)}/{str(token)}',
+            })
+            email = EmailMessage(
+                mail_subject, message, to=[request.data['email']], from_email=EMAIL_HOST_USER
+            )
+            email.send()
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+            pass
+        return Response(status=status.HTTP_201_CREATED)

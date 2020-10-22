@@ -1,8 +1,9 @@
 # Create your views here.
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -148,13 +149,6 @@ class BoxView(viewsets.ViewSet):
                     building=box.building
                 )
             except DropoffCall.DoesNotExist:
-                send_mail(
-                    subject='Нужен вывоз мусора',
-                    message='Привет пока',
-                    recipient_list=[box.building.organization.dropoff_email_to],
-                    from_email=settings.EMAIL_HOST_USER,
-                    fail_silently=False
-                )
                 dropoff_call = DropoffCall(
                     building=box.building
                 )
@@ -167,6 +161,17 @@ class BoxView(viewsets.ViewSet):
                         box_percent_dropped=i.fullness
                     ))
                 DropoffLog.objects.bulk_create(dropofflog)
+                message = render_to_string('reset_password.html', {
+                    'dropofflog': dropofflog,
+                    'building': building
+                })
+                email = EmailMessage(
+                    'Вывоз макулатуры RCS',
+                    message,
+                    to=[box.building.organization.dropoff_email_to],
+                    from_email=settings.EMAIL_HOST_USER
+                )
+                email.send()
         return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, pk):

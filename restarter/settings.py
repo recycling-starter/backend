@@ -26,6 +26,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', 'api.recyclingstarter.ru']
 DOMAIN = 'api.recyclingstarter.ru'
+BASEDOMAIN = 'recyclingstarter.ru'
 # Application definition
 
 INSTALLED_APPS = [
