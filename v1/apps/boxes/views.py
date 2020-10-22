@@ -112,6 +112,7 @@ class BoxView(viewsets.ViewSet):
                     to=[box.building.organization.dropoff_email_to],
                     from_email=settings.EMAIL_HOST_USER
                 )
+                email.content_subtype = "html"
                 email.send()
 
         return Response(BoxSerializer(box).data)
@@ -177,6 +178,7 @@ class BoxView(viewsets.ViewSet):
                     to=[box.building.organization.dropoff_email_to],
                     from_email=settings.EMAIL_HOST_USER
                 )
+                email.content_subtype = "html"
                 email.send()
         return Response(status=status.HTTP_201_CREATED)
 

@@ -49,7 +49,7 @@
                         style="text-decoration:none"><span><span><span style="font-family:Calibri,sans-serif"><span
                         style="font-style:normal">
                     {% for user in log.box.users.all %}
-                        {{ user.name }}: {{ user.phone }}<br>
+                        {{ user.first_name }}: {{ user.phone }}<br>
                     {% endfor %}
                 </span></span></span></span></span></span></span></span></td>
             </tr>
