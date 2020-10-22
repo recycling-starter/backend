@@ -12,7 +12,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from restarter.settings import DOMAIN, EMAIL_HOST_USER
-from v1.apps.organizations.models import Building
+from v1.apps.organizations.models import Building, Organization
 from v1.apps.users.models import User, account_activation_token
 from v1.apps.users.serializers import UserListCreateSerializer, CustomAuthTokenSerializer, UserDataSerializer
 
@@ -48,7 +48,14 @@ class CustomObtainAuthToken(ObtainAuthToken):
 
 class UserView(viewsets.ViewSet):
     def retrieve(self, request, pk):
-        queryset = User.objects.all()
+        if 'organization' in request.query_params:
+            try:
+                organization = Organization.objects.get(id=request.query_params['organization'])
+            except Organization.DoesNotExist:
+                raise Http404
+            queryset = User.objects.filter(building__organization=organization)
+        else:
+            queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
         result = UserDataSerializer(user).data
         return Response(result)
