@@ -7,7 +7,7 @@ from rest_framework import viewsets, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from v1.apps.dropoffs.models import DropoffCall
+from v1.apps.dropoffs.models import DropoffCall, DropoffLog
 from v1.apps.dropoffs.serializers import DropoffListSerializer, DropoffDataSerializer
 
 
@@ -35,4 +35,7 @@ class DropoffView(viewsets.ViewSet):
         queryset.is_dropped = True
         queryset.datetime_dropoff = timezone.make_aware(datetime.today())
         queryset.save()
+        for dropofflog in list(DropoffLog.objects.filter(call=queryset)):
+            dropofflog.box.fullness = 0
+            dropofflog.save()
         return Response(status=status.HTTP_201_CREATED)
