@@ -68,7 +68,8 @@ class OrganizationSerializer(serializers.ModelSerializer):
             if len(full_boxes) >= instance.min_full_boxes:
                 try:
                     _ = DropoffCall.objects.get(
-                        building=building
+                        building=building,
+                        is_dropped=False
                     )
                 except DropoffCall.DoesNotExist:
                     dropoff_call = DropoffCall(

@@ -86,7 +86,8 @@ class BoxView(viewsets.ViewSet):
                 and len(full_boxes) >= organization.min_full_boxes:
             try:
                 _ = DropoffCall.objects.get(
-                    building=box.building
+                    building=box.building,
+                    is_dropped=False
                 )
             except DropoffCall.DoesNotExist:
                 dropoff_call = DropoffCall(
@@ -150,7 +151,8 @@ class BoxView(viewsets.ViewSet):
                 and len(full_boxes) >= organization.min_full_boxes:
             try:
                 _ = DropoffCall.objects.get(
-                    building=box.building
+                    building=box.building,
+                    is_dropped=False
                 )
             except DropoffCall.DoesNotExist:
                 dropoff_call = DropoffCall(
