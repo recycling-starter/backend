@@ -136,6 +136,7 @@ USE_TZ = True
 EMAIL_HOST = 'connect.smtp.bz'
 EMAIL_PORT = 465
 EMAIL_HOST_USER = os.getenv('EMAIL_USER')
+EMAIL_FROM = os.getenv('EMAIL_FROM')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
 EMAIL_USE_SSL = True
 

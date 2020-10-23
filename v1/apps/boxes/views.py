@@ -110,7 +110,7 @@ class BoxView(viewsets.ViewSet):
                     'Вывоз макулатуры RCS',
                     message,
                     to=[box.building.organization.dropoff_email_to],
-                    from_email=settings.EMAIL_HOST_USER
+                    from_email=settings.EMAIL_FROM
                 )
                 email.content_subtype = "html"
                 email.send()
@@ -176,7 +176,7 @@ class BoxView(viewsets.ViewSet):
                     'Вывоз макулатуры RCS',
                     message,
                     to=[box.building.organization.dropoff_email_to],
-                    from_email=settings.EMAIL_HOST_USER
+                    from_email=settings.EMAIL_FROM
                 )
                 email.content_subtype = "html"
                 email.send()

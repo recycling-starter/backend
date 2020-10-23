@@ -92,7 +92,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
                         'Вывоз макулатуры RCS',
                         message,
                         to=[instance.dropoff_email_to],
-                        from_email=settings.EMAIL_HOST_USER,
+                        from_email=settings.EMAIL_FROM,
                     )
                     email.content_subtype = "html"
                     email.send()
