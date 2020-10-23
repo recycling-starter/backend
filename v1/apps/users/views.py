@@ -148,9 +148,10 @@ class UserView(viewsets.ViewSet):
         if user is not None and account_activation_token.check_token(user, token):
             if 'password' in request.data:
                 password = request.data['password']
-                request.user.set_password(password)
-            user.is_active = True
-            user.save()
+                user.set_password(password)
+            else:
+                user.is_active = True
+                user.save()
             return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
