@@ -149,9 +149,8 @@ class UserView(viewsets.ViewSet):
             if 'password' in request.data:
                 password = request.data['password']
                 user.set_password(password)
-            else:
-                user.is_active = True
-                user.save()
+            user.is_active = True
+            user.save()
             return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
