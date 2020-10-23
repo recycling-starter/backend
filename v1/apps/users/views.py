@@ -84,7 +84,7 @@ class UserView(viewsets.ViewSet):
         token = account_activation_token.make_token(user)
         message = render_to_string('acc_active_email.html', {
             'user': user,
-            'url': f'https://{BASEDOMAIN}/activate/{str(uid)}/{str(token)}',
+            'url': f'https://{BASEDOMAIN}/confirm_email/{str(uid)}/{str(token)}',
         })
         email = EmailMessage(
             mail_subject, message, to=[validated_data['email']], from_email=EMAIL_HOST_USER
