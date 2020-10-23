@@ -168,7 +168,7 @@ class UserView(viewsets.ViewSet):
             token = account_activation_token.make_token(user)
             message = render_to_string('reset_password.html', {
                 'user': user,
-                'url': f'https://{BASEDOMAIN}/v1/users/reset_password/{str(uid)}/{str(token)}',
+                'url': f'https://{BASEDOMAIN}/reset_password/{str(uid)}/{str(token)}',
             })
             email = EmailMessage(
                 mail_subject, message, to=[request.data['email']], from_email=EMAIL_FROM
