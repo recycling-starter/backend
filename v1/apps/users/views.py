@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from restarter.settings import EMAIL_HOST_USER, BASEDOMAIN
+from restarter.settings import EMAIL_HOST_USER, BASEDOMAIN, EMAIL_FROM
 from v1.apps.organizations.models import Building, Organization
 from v1.apps.users.models import User, account_activation_token
 from v1.apps.users.serializers import UserListCreateSerializer, CustomAuthTokenSerializer, UserDataSerializer, \
@@ -87,7 +87,7 @@ class UserView(viewsets.ViewSet):
             'url': f'https://{BASEDOMAIN}/confirm_email/{str(uid)}/{str(token)}',
         })
         email = EmailMessage(
-            mail_subject, message, to=[validated_data['email']], from_email=EMAIL_HOST_USER
+            mail_subject, message, to=[validated_data['email']], from_email=EMAIL_FROM
         )
         email.send()
 
@@ -168,10 +168,10 @@ class UserView(viewsets.ViewSet):
             token = account_activation_token.make_token(user)
             message = render_to_string('reset_password.html', {
                 'user': user,
-                'url': f'https://{BASEDOMAIN}/reset_password/{str(uid)}/{str(token)}',
+                'url': f'https://{BASEDOMAIN}/v1/users/reset_password/{str(uid)}/{str(token)}',
             })
             email = EmailMessage(
-                mail_subject, message, to=[request.data['email']], from_email=EMAIL_HOST_USER
+                mail_subject, message, to=[request.data['email']], from_email=EMAIL_FROM
             )
             email.send()
         except(TypeError, ValueError, OverflowError, User.DoesNotExist):
