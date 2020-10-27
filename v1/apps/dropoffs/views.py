@@ -63,6 +63,7 @@ class DropoffView(viewsets.ViewSet):
             try:
                 email.send()
                 queryset.is_sent = True
+                queryset.save()
             except SMTPException:
                 pass
         else:
