@@ -65,9 +65,7 @@ class BoxView(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         box = self.get_object(request, pk)
 
-        if not request.user or \
-                request.user.organization != box.building.organization or \
-                request.user not in box.users.all():
+        if not request.user or request.user.organization != box.building.organization and request.user not in box.users.all():
             return Response(status=403)
 
         return Response(BoxDataSerializer(box).data)
