@@ -74,7 +74,7 @@ class BoxView(viewsets.ViewSet):
 
     def update(self, request, pk):
         box = self.get_object(request, pk)
-        if not request.user or request.user.organization != box.building.organization:
+        if not request.user or request.user.organization is not None and request.user.organization != box.building.organization:
             return Response(status=403)
         serializer = BoxSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -209,7 +209,7 @@ class BoxView(viewsets.ViewSet):
     def destroy(self, request, pk):
         box = self.get_object(request, pk)
         if not request.user or \
-                request.user.organization != box.building.organization:
+                request.user.organization is not None and request.user.organization != box.building.organization:
             return Response(status=403)
 
         box.delete()
@@ -220,7 +220,7 @@ class BoxView(viewsets.ViewSet):
         box = self.get_object(request, pk)
 
         if not request.user or \
-                request.user.organization != box.building.organization:
+                request.user.organization is not None and request.user.organization != box.building.organization:
             return Response(status=403)
 
         if 'user' not in request.data:
@@ -246,7 +246,7 @@ class BoxView(viewsets.ViewSet):
     def get_users_available(self, request, pk=None):
         box = self.get_object(request, pk)
         if not request.user or \
-                request.user.organization != box.building.organization:
+                request.user.organization is not None and request.user.organization != box.building.organization:
             return Response(status=403)
 
         users = User.objects.annotate(count=Count('box')).filter(building=box.building).exclude(box=box).order_by(
@@ -260,7 +260,7 @@ class BoxView(viewsets.ViewSet):
         except Box.DoesNotExist:
             raise Http404
         if not request.user or \
-                request.user.organization != box.building.organization:
+                request.user.organization is not None and request.user.organization != box.building.organization:
             return Response(status=403)
 
         if 'user' not in request.query_params:

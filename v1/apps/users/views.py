@@ -38,8 +38,8 @@ class UserView(viewsets.ViewSet):
     def retrieve(self, request, pk):
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
-        if not request.user or \
-                request.user.organization != user.building.organization or \
+        if request.user is None or \
+                request.user.organization is not None and request.user.organization != user.building.organization or \
                 request.user != user:
             return Response(status=403)
         result = UserDataSerializer(user).data
@@ -47,7 +47,7 @@ class UserView(viewsets.ViewSet):
 
     def list(self, request):
 
-        if not request.user or \
+        if request.user is None or \
                 request.user.organization is None:
             return Response(status=403)
         if 'organization' in request.query_params:
@@ -100,7 +100,7 @@ class UserView(viewsets.ViewSet):
         return Response(status=status.HTTP_201_CREATED)
 
     def update(self, request):
-        if not request.user:
+        if request.user is None:
             return Response(status=403)
         serializer = PasswordSerializer(data=request.data)
 
@@ -117,7 +117,7 @@ class UserView(viewsets.ViewSet):
                         status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request):
-        if not request.user:
+        if request.user is None:
             return Response(status=403)
         email = request.user.email
         phone = request.user.phone
