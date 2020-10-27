@@ -87,7 +87,7 @@ class BoxView(viewsets.ViewSet):
             try:
                 _ = DropoffCall.objects.get(
                     building=box.building,
-                    datetime_dropoff__isnull=True
+                    datetime_dropoff__isnull=False
                 )
             except DropoffCall.DoesNotExist:
                 dropoff_call = DropoffCall(
@@ -159,7 +159,7 @@ class BoxView(viewsets.ViewSet):
             try:
                 _ = DropoffCall.objects.get(
                     building=box.building,
-                    datetime_dropoff__isnull=True
+                    datetime_dropoff__isnull=False
                 )
             except DropoffCall.DoesNotExist:
                 dropoff_call = DropoffCall(
