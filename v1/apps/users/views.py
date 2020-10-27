@@ -19,7 +19,6 @@ from v1.apps.users.serializers import UserListCreateSerializer, CustomAuthTokenS
     PasswordSerializer
 
 
-
 class CustomObtainAuthToken(ObtainAuthToken):
     serializer_class = CustomAuthTokenSerializer
 
@@ -39,11 +38,18 @@ class UserView(viewsets.ViewSet):
     def retrieve(self, request, pk):
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
+        if not request.user or \
+                request.user.organization != user.building.organization or \
+                request.user != user:
+            return Response(status=403)
         result = UserDataSerializer(user).data
         return Response(result)
 
     def list(self, request):
 
+        if not request.user or \
+                request.user.organization is None:
+            return Response(status=403)
         if 'organization' in request.query_params:
             try:
                 organization = Organization.objects.get(id=request.query_params['organization'])
@@ -94,6 +100,8 @@ class UserView(viewsets.ViewSet):
         return Response(status=status.HTTP_201_CREATED)
 
     def update(self, request):
+        if not request.user:
+            return Response(status=403)
         serializer = PasswordSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -109,6 +117,8 @@ class UserView(viewsets.ViewSet):
                         status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request):
+        if not request.user:
+            return Response(status=403)
         email = request.user.email
         phone = request.user.phone
         first_name = request.user.first_name
@@ -135,8 +145,6 @@ class UserView(viewsets.ViewSet):
         del result['password']
         return Response(result)
 
-    def destroy(self, request, pk):
-        pass
 
     @action(detail=True, methods=['post'])
     def check_email(self, request, uidb64, token):

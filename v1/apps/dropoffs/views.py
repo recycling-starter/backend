@@ -17,21 +17,33 @@ from v1.apps.dropoffs.serializers import DropoffListSerializer, DropoffDataSeria
 
 class DropoffView(viewsets.ViewSet):
     def list(self, request):
+        if not request.user or \
+                request.user.organization is None:
+            return Response(status=403)
+
         queryset = DropoffCall.objects.filter(building__organization=request.user.organization)
         serializer = DropoffListSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
+        if not request.user or \
+                request.user.organization is None:
+            return Response(status=403)
+
         try:
-            queryset = DropoffCall.objects.get(pk=pk)
+            queryset = DropoffCall.objects.get(pk=pk, building__organization=request.user.organization)
         except DropoffCall.DoesNotExist:
             raise Http404
         serializer = DropoffDataSerializer(queryset)
         return Response(serializer.data)
 
     def update(self, request, pk=None):
+        if not request.user or \
+                request.user.organization is None:
+            return Response(status=403)
+
         try:
-            queryset = DropoffCall.objects.get(pk=pk)
+            queryset = DropoffCall.objects.get(pk=pk, building__organization=request.user.organization)
         except DropoffCall.DoesNotExist:
             raise Http404
         if queryset.datetime_dropoff is not None:

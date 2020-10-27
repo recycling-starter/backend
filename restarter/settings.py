@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '0lo^lhr6l7pe8k&1u-fhl7faeb=nc+*@ledsym3s%3p=_7uxw@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', 'api.recyclingstarter.ru']
 DOMAIN = 'api.recyclingstarter.ru'

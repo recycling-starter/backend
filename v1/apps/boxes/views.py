@@ -47,6 +47,8 @@ class BoxView(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
+        if not request.user or request.user.organization is None:
+            return Response(status=403)
         if 'building' not in request.data or 'room' not in request.data:
             raise ValidationError('Not enough data')
         try:
@@ -62,10 +64,18 @@ class BoxView(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         box = self.get_object(request, pk)
+
+        if not request.user or \
+                request.user.organization != box.building.organization or \
+                request.user not in box.users.all():
+            return Response(status=403)
+
         return Response(BoxDataSerializer(box).data)
 
     def update(self, request, pk):
         box = self.get_object(request, pk)
+        if not request.user or request.user.organization != box.building.organization:
+            return Response(status=403)
         serializer = BoxSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -126,6 +136,9 @@ class BoxView(viewsets.ViewSet):
     def partial_update(self, request, pk):
         queryset = request.user.box_set.all()
         box = get_object_or_404(queryset, pk=pk)
+
+        if not request.user or request.user not in box.users.all():
+            return Response(status=403)
 
         if 'fullness' in request.data:
             fullness = request.data['fullness']
@@ -195,12 +208,20 @@ class BoxView(viewsets.ViewSet):
 
     def destroy(self, request, pk):
         box = self.get_object(request, pk)
+        if not request.user or \
+                request.user.organization != box.building.organization:
+            return Response(status=403)
+
         box.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post'])
     def add_user(self, request, pk=None):
         box = self.get_object(request, pk)
+
+        if not request.user or \
+                request.user.organization != box.building.organization:
+            return Response(status=403)
 
         if 'user' not in request.data:
             raise ValidationError(_('"user" must be here'))
@@ -224,6 +245,10 @@ class BoxView(viewsets.ViewSet):
     @action(detail=True, methods=['post'])
     def get_users_available(self, request, pk=None):
         box = self.get_object(request, pk)
+        if not request.user or \
+                request.user.organization != box.building.organization:
+            return Response(status=403)
+
         users = User.objects.annotate(count=Count('box')).filter(building=box.building).exclude(box=box).order_by(
             'count')
         return Response(AvailableUsersSerializer(users, many=True).data)
@@ -234,6 +259,10 @@ class BoxView(viewsets.ViewSet):
             box = Box.objects.get(pk=pk)
         except Box.DoesNotExist:
             raise Http404
+        if not request.user or \
+                request.user.organization != box.building.organization:
+            return Response(status=403)
+
         if 'user' not in request.query_params:
             raise ValidationError(_('"user" must be here'))
         user = request.query_params['user']
