@@ -147,7 +147,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = 'static'
 
 CORS_ALLOWED_ORIGINS = [
-    'https://recyclingstarter.ru/'
+    'https://recyclingstarter.ru'
 ]
 
 AUTH_USER_MODEL = 'users.User'
