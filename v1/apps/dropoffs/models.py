@@ -18,7 +18,7 @@ class DropoffCall(models.Model):
         verbose_name='Здание',
         on_delete=models.CASCADE
     )
-    is_dropped = models.BooleanField(
+    is_sent = models.BooleanField(
         default=False
     )
 

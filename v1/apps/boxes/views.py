@@ -1,4 +1,6 @@
 # Create your views here.
+from smtplib import SMTPException
+
 from django.core.mail import EmailMessage
 from django.db.models import Count
 from django.http import Http404
@@ -70,8 +72,6 @@ class BoxView(viewsets.ViewSet):
         box.fullness = serializer.validated_data['fullness']
         box.room = serializer.validated_data['room']
 
-        box.save()
-
         building = box.building
         organization = building.organization
         full_boxes = list(Box.objects.filter(
@@ -87,7 +87,7 @@ class BoxView(viewsets.ViewSet):
             try:
                 _ = DropoffCall.objects.get(
                     building=box.building,
-                    is_dropped=False
+                    datetime_dropoff__isnull=True
                 )
             except DropoffCall.DoesNotExist:
                 dropoff_call = DropoffCall(
@@ -113,7 +113,13 @@ class BoxView(viewsets.ViewSet):
                     from_email=settings.EMAIL_FROM
                 )
                 email.content_subtype = "html"
-                email.send()
+                try:
+                    email.send()
+                    dropoff_call.is_sent = True
+                    dropoff_call.save()
+                except SMTPException:
+                    pass
+        box.save()
 
         return Response(BoxSerializer(box).data)
 
@@ -153,7 +159,7 @@ class BoxView(viewsets.ViewSet):
             try:
                 _ = DropoffCall.objects.get(
                     building=box.building,
-                    is_dropped=False
+                    datetime_dropoff__isnull=True
                 )
             except DropoffCall.DoesNotExist:
                 dropoff_call = DropoffCall(
@@ -179,7 +185,12 @@ class BoxView(viewsets.ViewSet):
                     from_email=settings.EMAIL_FROM
                 )
                 email.content_subtype = "html"
-                email.send()
+                try:
+                    email.send()
+                    dropoff_call.is_sent = True
+                    dropoff_call.save()
+                except SMTPException:
+                    pass
         return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, pk):

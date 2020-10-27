@@ -47,4 +47,5 @@ class DropoffDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DropoffCall
-        fields = ['datetime_call', 'datetime_dropoff', 'building', 'is_dropped', 'boxes']
+        fields = ['datetime_call', 'datetime_dropoff', 'building', 'is_sent', 'boxes']
+        read_only_fields = ['is_sent']

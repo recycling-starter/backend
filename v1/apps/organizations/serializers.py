@@ -1,3 +1,5 @@
+from smtplib import SMTPException
+
 from django.core.mail import send_mail, EmailMessage
 from django.template.loader import render_to_string
 from rest_framework import serializers
@@ -95,6 +97,10 @@ class OrganizationSerializer(serializers.ModelSerializer):
                         from_email=settings.EMAIL_FROM,
                     )
                     email.content_subtype = "html"
-                    email.send()
-
+                    try:
+                        email.send()
+                        dropoff_call.is_sent = True
+                        dropoff_call.save()
+                    except SMTPException:
+                        pass
         return instance
