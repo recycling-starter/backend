@@ -71,6 +71,7 @@ class BoxView(viewsets.ViewSet):
 
         box.fullness = serializer.validated_data['fullness']
         box.room = serializer.validated_data['room']
+        box.save()
 
         building = box.building
         organization = building.organization
@@ -87,7 +88,7 @@ class BoxView(viewsets.ViewSet):
             try:
                 _ = DropoffCall.objects.get(
                     building=box.building,
-                    datetime_dropoff__isnull=False
+                        datetime_dropoff__isnull=True
                 )
             except DropoffCall.DoesNotExist:
                 dropoff_call = DropoffCall(
@@ -119,7 +120,6 @@ class BoxView(viewsets.ViewSet):
                     dropoff_call.save()
                 except SMTPException:
                     pass
-        box.save()
 
         return Response(BoxSerializer(box).data)
 
@@ -159,7 +159,7 @@ class BoxView(viewsets.ViewSet):
             try:
                 _ = DropoffCall.objects.get(
                     building=box.building,
-                    datetime_dropoff__isnull=False
+                        datetime_dropoff__isnull=True
                 )
             except DropoffCall.DoesNotExist:
                 dropoff_call = DropoffCall(

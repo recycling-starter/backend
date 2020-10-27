@@ -71,7 +71,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
                 try:
                     _ = DropoffCall.objects.get(
                         building=building,
-                        datetime_dropoff__isnull=False
+                        datetime_dropoff__isnull=True
                     )
                 except DropoffCall.DoesNotExist:
                     dropoff_call = DropoffCall(
