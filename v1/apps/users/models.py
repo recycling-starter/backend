@@ -58,7 +58,8 @@ class User(AbstractUser):
         Building,
         verbose_name='Здание',
         on_delete=models.CASCADE,
-        null=True
+        null=True,
+        blank=True
     )
     email = models.EmailField(
         verbose_name='email address',
