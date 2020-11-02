@@ -39,14 +39,13 @@ class UserView(viewsets.ViewSet):
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
         if request.user is None or \
-                request.user.organization is not None and request.user.organization != user.building.organization or \
-                request.user != user:
+                (request.user.organization is not None and request.user.organization != user.building.organization) or \
+                (request.user.organization is None and request.user != user):
             return Response(status=403)
         result = UserDataSerializer(user).data
         return Response(result)
 
     def list(self, request):
-
         if request.user is None or \
                 request.user.organization is None:
             return Response(status=403)
@@ -181,7 +180,7 @@ class UserView(viewsets.ViewSet):
             email = EmailMessage(
                 mail_subject, message, to=[request.data['email']], from_email=EMAIL_FROM
             )
-            email.send()
+            email.send()т
         except(TypeError, ValueError, OverflowError, User.DoesNotExist):
             pass
         return Response(status=status.HTTP_201_CREATED)
