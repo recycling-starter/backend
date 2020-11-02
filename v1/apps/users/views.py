@@ -180,7 +180,7 @@ class UserView(viewsets.ViewSet):
             email = EmailMessage(
                 mail_subject, message, to=[request.data['email']], from_email=EMAIL_FROM
             )
-            email.send()т
+            email.send()
         except(TypeError, ValueError, OverflowError, User.DoesNotExist):
             pass
         return Response(status=status.HTTP_201_CREATED)
