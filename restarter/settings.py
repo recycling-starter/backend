@@ -24,9 +24,9 @@ SECRET_KEY = '0lo^lhr6l7pe8k&1u-fhl7faeb=nc+*@ledsym3s%3p=_7uxw@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', 'api.recyclingstarter.ru']
-DOMAIN = 'api.recyclingstarter.ru'
-BASEDOMAIN = 'recyclingstarter.ru'
+ALLOWED_HOSTS = ['localhost', 'api.recyclingstarter.online']
+DOMAIN = 'api.recyclingstarter.online'
+BASEDOMAIN = 'recyclingstarter.online'
 # Application definition
 
 INSTALLED_APPS = [
@@ -147,7 +147,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = 'static'
 
 CORS_ALLOWED_ORIGINS = [
-    'https://recyclingstarter.ru'
+    'https://recyclingstarter.online'
 ]
 
 AUTH_USER_MODEL = 'users.User'
