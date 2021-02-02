@@ -25,4 +25,3 @@ class Box(models.Model):
 
     def __str__(self):
         return self.room
-
