@@ -1,64 +1,19 @@
-from smtplib import SMTPException
 from datetime import datetime, date, time
-from django.core.mail import EmailMessage
 from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
-from django_q.tasks import schedule
-from django_q.models import Schedule
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
-from restarter import settings
 from v1.apps.boxes.models import Box
 from v1.apps.boxes.serializers import BoxSerializer, BoxListSerializer, BoxDataSerializer, AvailableUsersSerializer
-from v1.apps.dropoffs.models import DropoffCall, DropoffLog
+from v1.apps.dropoffs.models import DropoffCall
+from v1.apps.dropoffs.tasks import call_dropoff
 from v1.apps.organizations.models import Building
 from v1.apps.users.models import User
-
-
-def call_dropoff(building):
-    #  Отправка сообщения
-    #  Не уверен, что эта функция должна быть здесь
-    organization = building.organization
-    nearly_full_boxes = list(Box.objects.filter(
-        fullness__gte=organization.min_fullness_level_dropoff,
-        building=building
-    ))
-    dropoff_call = DropoffCall(building=building)
-    dropoff_call.save()
-
-    dropofflog = []
-    for box in nearly_full_boxes:
-        dropofflog.append(DropoffLog(
-            call=dropoff_call,
-            box=box,
-            box_percent_dropped=box.fullness
-        ))
-    DropoffLog.objects.bulk_create(dropofflog)
-
-    message = render_to_string('dropoff_call.html', {
-        'dropofflog': dropofflog,
-        'building': building
-    })
-    email = EmailMessage(
-        'Вывоз макулатуры RCS',
-        message,
-        to=[organization.dropoff_email_to],
-        from_email=settings.EMAIL_FROM
-    )
-    email.content_subtype = "html"
-
-    try:
-        email.send()
-        dropoff_call.is_sent = True
-        dropoff_call.save()
-    except SMTPException:
-        pass
 
 
 class BoxView(viewsets.ViewSet):
@@ -141,12 +96,9 @@ class BoxView(viewsets.ViewSet):
             if not dropoff:
                 d = date.today()
                 t = time(19, 00)
-                next_run = datetime.combine(d, t)
-                schedule('views.call_dropoff',
-                         building,
-                         schedule_type=Schedule.ONCE,
-                         next_run=next_run)
-
+                this_evening = datetime.combine(d, t)
+                call_dropoff.apply_async(args=(building), eta=this_evening)
+        
         return Response(BoxSerializer(box).data)
 
     def partial_update(self, request, pk):
@@ -189,11 +141,8 @@ class BoxView(viewsets.ViewSet):
             if not dropoff:
                 d = date.today()
                 t = time(19, 00)
-                next_run = datetime.combine(d, t)
-                schedule('views.call_dropoff',
-                         building,
-                         schedule_type=Schedule.ONCE,
-                         next_run=next_run)
+                this_evening = datetime.combine(d, t)
+                call_dropoff.apply_async(args=(building), eta=this_evening)
 
         return Response(status=status.HTTP_200_OK)
 
