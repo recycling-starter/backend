@@ -1,4 +1,4 @@
-from celery import Celery
+from celery import shared_task
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from smtplib import SMTPException
@@ -8,10 +8,7 @@ from v1.apps.dropoffs.models import DropoffCall, DropoffLog
 from restarter import settings
 
 
-app = Celery('dropoffs', broker='reids://guest@localhost//')
-
-
-@app.task
+@shared_task
 def call_dropoff(building):
     #  Отправка сообщения
     organization = building.organization

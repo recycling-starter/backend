@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from v1.apps.boxes.models import Box
 from v1.apps.boxes.serializers import BoxSerializer, BoxListSerializer, BoxDataSerializer, AvailableUsersSerializer
 from v1.apps.dropoffs.models import DropoffCall
-from v1.apps.dropoffs.tasks import call_dropoff
+from v1.apps.boxes.tasks import call_dropoff
 from v1.apps.organizations.models import Building
 from v1.apps.users.models import User
 
@@ -98,7 +98,7 @@ class BoxView(viewsets.ViewSet):
                 t = time(19, 00)
                 this_evening = datetime.combine(d, t)
                 call_dropoff.apply_async(args=(building), eta=this_evening)
-        
+
         return Response(BoxSerializer(box).data)
 
     def partial_update(self, request, pk):
