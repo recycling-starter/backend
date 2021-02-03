@@ -1,21 +1,17 @@
-# Create your views here.
-from smtplib import SMTPException
-
-from django.core.mail import EmailMessage
+from datetime import datetime, date, time
 from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
-from restarter import settings
 from v1.apps.boxes.models import Box
 from v1.apps.boxes.serializers import BoxSerializer, BoxListSerializer, BoxDataSerializer, AvailableUsersSerializer
-from v1.apps.dropoffs.models import DropoffCall, DropoffLog
+from v1.apps.dropoffs.models import DropoffCall
+from v1.apps.boxes.tasks import call_dropoff
 from v1.apps.organizations.models import Building
 from v1.apps.users.models import User
 
@@ -72,7 +68,10 @@ class BoxView(viewsets.ViewSet):
 
     def update(self, request, pk):
         box = self.get_object(request, pk)
-        if not request.user or request.user.organization is not None and request.user.organization != box.building.organization:
+
+        if (not request.user or
+                request.user.organization is not None and
+                request.user.organization != box.building.organization):
             return Response(status=403)
         serializer = BoxSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -80,54 +79,25 @@ class BoxView(viewsets.ViewSet):
         box.fullness = serializer.validated_data['fullness']
         box.room = serializer.validated_data['room']
         box.save()
-
         building = box.building
         organization = building.organization
+
         full_boxes = list(Box.objects.filter(
             fullness__gte=organization.min_fullness_level_dropoff_call,
             building=building
         ))
-        nearly_full_boxes = list(Box.objects.filter(
-            fullness__gte=organization.min_fullness_level_dropoff,
-            building=building
-        ))
-        if box.fullness >= organization.min_fullness_level_dropoff_call \
-                and len(full_boxes) >= organization.min_full_boxes:
-            try:
-                _ = DropoffCall.objects.get(
+
+        if (box.fullness >= organization.min_fullness_level_dropoff_call
+                and len(full_boxes) >= organization.min_full_boxes):
+            dropoff = DropoffCall.objects.filter(
                     building=box.building,
-                        datetime_dropoff__isnull=True
-                )
-            except DropoffCall.DoesNotExist:
-                dropoff_call = DropoffCall(
-                    building=box.building
-                )
-                dropoff_call.save()
-                dropofflog = []
-                for i in nearly_full_boxes:
-                    dropofflog.append(DropoffLog(
-                        call=dropoff_call,
-                        box=i,
-                        box_percent_dropped=i.fullness
-                    ))
-                DropoffLog.objects.bulk_create(dropofflog)
-                message = render_to_string('dropoff_call.html', {
-                    'dropofflog': dropofflog,
-                    'building': building
-                })
-                email = EmailMessage(
-                    'Вывоз макулатуры RCS',
-                    message,
-                    to=[box.building.organization.dropoff_email_to],
-                    from_email=settings.EMAIL_FROM
-                )
-                email.content_subtype = "html"
-                try:
-                    email.send()
-                    dropoff_call.is_sent = True
-                    dropoff_call.save()
-                except SMTPException:
-                    pass
+                    datetime_dropoff__isnull=True
+                )[0]
+            if not dropoff:
+                d = date.today()
+                t = time(19, 00)
+                this_evening = datetime.combine(d, t)
+                call_dropoff.apply_async(args=(building), eta=this_evening)
 
         return Response(BoxSerializer(box).data)
 
@@ -161,48 +131,20 @@ class BoxView(viewsets.ViewSet):
             fullness__gte=organization.min_fullness_level_dropoff_call,
             building=building
         ))
-        nearly_full_boxes = list(Box.objects.filter(
-            fullness__gte=organization.min_fullness_level_dropoff,
-            building=building
-        ))
-        if box.fullness >= organization.min_fullness_level_dropoff_call \
-                and len(full_boxes) >= organization.min_full_boxes:
-            try:
-                _ = DropoffCall.objects.get(
+
+        if (box.fullness >= organization.min_fullness_level_dropoff_call
+                and len(full_boxes) >= organization.min_full_boxes):
+            dropoff = DropoffCall.objects.filter(
                     building=box.building,
-                        datetime_dropoff__isnull=True
-                )
-            except DropoffCall.DoesNotExist:
-                dropoff_call = DropoffCall(
-                    building=box.building
-                )
-                dropoff_call.save()
-                dropofflog = []
-                for i in nearly_full_boxes:
-                    dropofflog.append(DropoffLog(
-                        call=dropoff_call,
-                        box=i,
-                        box_percent_dropped=i.fullness
-                    ))
-                DropoffLog.objects.bulk_create(dropofflog)
-                message = render_to_string('dropoff_call.html', {
-                    'dropofflog': dropofflog,
-                    'building': building
-                })
-                email = EmailMessage(
-                    'Вывоз макулатуры RCS',
-                    message,
-                    to=[box.building.organization.dropoff_email_to],
-                    from_email=settings.EMAIL_FROM
-                )
-                email.content_subtype = "html"
-                try:
-                    email.send()
-                    dropoff_call.is_sent = True
-                    dropoff_call.save()
-                except SMTPException:
-                    pass
-        return Response(status=status.HTTP_201_CREATED)
+                    datetime_dropoff__isnull=True
+                )[0]
+            if not dropoff:
+                d = date.today()
+                t = time(19, 00)
+                this_evening = datetime.combine(d, t)
+                call_dropoff.apply_async(args=(building), eta=this_evening)
+
+        return Response(status=status.HTTP_200_OK)
 
     def destroy(self, request, pk):
         box = self.get_object(request, pk)
