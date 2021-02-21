@@ -13,6 +13,7 @@ services:
       - prod.env
     depends_on:
       - db
+      - celery
     volumes:
       - ../:/srv/html/restarter
     command: sh -c "gunicorn -c env/gunicorn.py restarter.asgi:application"
@@ -27,6 +28,13 @@ services:
     volumes:
       - /usr/local/var/postgres:/var/lib/postgres/data/pgdata
 
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - ./certbot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
   nginx:
     image: nginx:latest
     restart: always
@@ -40,3 +48,36 @@ services:
     ports:
       - 80:80
       - 443:443
+
+  redis:
+    restart: always
+    image: redis:latest
+    expose:
+      - 6379
+
+  celery:
+    build:
+      context: ..
+      dockerfile: ./env/Dockerfile
+    command: sh -c "celery -A restarter worker --loglevel=info"
+    env_file:
+      - prod.env
+    volumes:
+      - ../:/srv/html/restarter/
+    depends_on:
+      - redis
+      - db
+
+  celerybeat:
+    build:
+      context: ..
+      dockerfile: ./env/Dockerfile
+    command: sh -c "celery -A restarter beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --pidfile="
+    env_file:
+      - prod.env
+    depends_on:
+      - redis
+      - db
+      - celery
+    volumes:
+      - ../:/srv/html/restarter/

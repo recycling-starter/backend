@@ -33,6 +33,8 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django_celery_beat',
+    'dbbackup',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -151,3 +153,37 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 AUTH_USER_MODEL = 'users.User'
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': './env/dbbackup'}
+DBBACKUP_CONNECTORS = {
+    'default': {
+        'CONNECTOR': 'dbbackup.db.postgresql.PgDumpConnector',
+        'NAME': os.getenv('POSTGRES_DB'),
+        'HOST': os.getenv('POSTGRES_HOST'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'PORT': os.getenv('POSTGRES_PORT'),
+    }
+}
+DBBACKUP_CLEANUP_KEEP = 5
+
+CELERY_BROKER_URL = CACHES['default']['LOCATION'][:-1] + '0'
+CELERY_RESULT_BACKEND = CACHES['default']['LOCATION'][:-1] + '1'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Europe/Moscow'
+CELERY_ENABLE_UTC = True
+# CELERY_timezone = 'Europe/Moscow'
+CELERY_BEAT_SCHEDULE = {}
