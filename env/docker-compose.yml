@@ -19,7 +19,7 @@ services:
     command: sh -c "gunicorn -c env/gunicorn.py restarter.asgi:application"
 
   db:
-    image: postgres:12
+    image: postgres:13
     restart: on-failure
     env_file:
       - prod.env
