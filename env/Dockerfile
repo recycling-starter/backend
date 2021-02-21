@@ -7,5 +7,5 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 
 COPY . /srv/html/restarter
 WORKDIR /srv/html/restarter
-RUN pip install -r /srv/html/restarter/env/requirements.txt
+RUN pip3 install -r /srv/html/restarter/env/requirements.txt
 
