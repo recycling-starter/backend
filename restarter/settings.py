@@ -165,8 +165,11 @@ CACHES = {
     }
 }
 
-DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
-DBBACKUP_STORAGE_OPTIONS = {'location': './env/dbbackup'}
+DBBACKUP_STORAGE = 'storages.backends.dropbox.DropBoxStorage'
+DBBACKUP_STORAGE_OPTIONS = {
+    'oauth2_access_token': os.getenv('DROPBOX_TOKEN'),
+    'root_path': os.getenv('DROPBOX_PATH')
+}
 DBBACKUP_CONNECTORS = {
     'default': {
         'CONNECTOR': 'dbbackup.db.postgresql.PgDumpConnector',
